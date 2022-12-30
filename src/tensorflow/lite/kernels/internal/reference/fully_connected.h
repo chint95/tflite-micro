@@ -23,6 +23,8 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/quantization_util.h"
 #include "tensorflow/lite/kernels/internal/types.h"
 
+#include "tensorflow/lite/modifier_params.h"
+
 namespace tflite {
 namespace reference_ops {
 
@@ -45,12 +47,14 @@ inline void FullyConnected(
   const int output_depth = MatchingDim(weights_shape, weights_dims_count - 2,
                                        output_shape, output_dims_count - 1);
   const int accum_depth = weights_shape.Dims(weights_dims_count - 1);
+  uint32_t mod_accum_depth = apply_offset ? weight_offset + accum_depth : accum_depth;
+  apply_offset = ~apply_offset;
   for (int b = 0; b < batches; ++b) {
     for (int out_c = 0; out_c < output_depth; ++out_c) {
       float total = 0.f;
       for (int d = 0; d < accum_depth; ++d) {
         total += input_data[b * accum_depth + d] *
-                 weights_data[out_c * accum_depth + d];
+                 weights_data[out_c * mod_accum_depth + d];
       }
       float bias_value = 0.0f;
       if (bias_data) {
