@@ -23,6 +23,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_profiler.h"
 #include "tensorflow/lite/schema/schema_generated.h"
+#include "tensorflow/lite/modifier_params.h"
 
 namespace tflite {
 namespace {
@@ -82,7 +83,6 @@ TfLiteStatus MicroGraph::InitSubgraphs() {
     }
   }
   current_subgraph_index_ = previous_subgraph_idx;
-
   return kTfLiteOk;
 }
 
@@ -153,6 +153,7 @@ TfLiteStatus MicroGraph::InvokeSubgraph(int subgraph_idx) {
   }
   uint32_t operators_size = NumSubgraphOperators(model_, subgraph_idx);
   for (size_t i = 0; i < operators_size; ++i) {
+    current_layer_index = i;
     TfLiteNode* node =
         &(subgraph_allocations_[subgraph_idx].node_and_registrations[i].node);
     const TfLiteRegistration* registration = subgraph_allocations_[subgraph_idx]
@@ -185,6 +186,7 @@ TfLiteStatus MicroGraph::InvokeSubgraph(int subgraph_idx) {
       return invoke_status;
     }
   }
+  current_layer_index = 0;
   current_subgraph_index_ = previous_subgraph_idx;
   return kTfLiteOk;
 }
