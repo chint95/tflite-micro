@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/common.h"
 #include "tensorflow/lite/kernels/internal/types.h"
 
+#include "tensorflow/lite/modifier_params.h"
 namespace tflite {
 
 namespace reference_ops {
@@ -87,8 +88,9 @@ inline void Conv(const ConvParams& params, const RuntimeShape& input_shape,
                 float input_value =
                     input_data[Offset(input_shape, batch, in_y, in_x,
                                       in_channel + group * filter_input_depth)];
-                float filter_value = filter_data[Offset(
-                    filter_shape, out_channel, filter_y, filter_x, in_channel)];
+                uint32_t filter_offset = Offset(filter_shape, out_channel, filter_y, filter_x, in_channel) 
+                                          * (1 + weight_offset[current_layer_index]);
+                float filter_value = filter_data[filter_offset];
                 total += (input_value * filter_value);
               }
             }
