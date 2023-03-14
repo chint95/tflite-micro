@@ -88,8 +88,11 @@ inline void Conv(const ConvParams& params, const RuntimeShape& input_shape,
                 float input_value =
                     input_data[Offset(input_shape, batch, in_y, in_x,
                                       in_channel + group * filter_input_depth)];
-                uint32_t filter_offset = Offset(filter_shape, out_channel, filter_y, filter_x, in_channel) 
-                                          * (1 + weight_offset[current_layer_index]);
+                const int* dims_data =
+                  reinterpret_cast<const int*>(filter_shape.DimsData());
+                uint32_t filter_offset =
+                  ((out_channel * dims_data[1] + filter_y) * dims_data[2] + filter_x)
+                    * (dims_data[3] + weight_offset[current_layer_index]) + in_channel;
                 float filter_value = filter_data[filter_offset];
                 total += (input_value * filter_value);
               }
